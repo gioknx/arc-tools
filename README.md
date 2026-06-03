@@ -1,6 +1,6 @@
 # ARC Tools
 
-Userscripts (Tampermonkey) para o portal **Pioneer** do ARC Raiders. Se atualizam sozinhos.
+Userscripts (Tampermonkey) para os portais **Pioneer** e **Daxus** do ARC Raiders. Se atualizam sozinhos.
 
 ## Instalação (1x)
 1. Instale a extensão **Tampermonkey**.
@@ -12,9 +12,10 @@ Userscripts (Tampermonkey) para o portal **Pioneer** do ARC Raiders. Se atualiza
 Depois disso, **atualizam sozinhos** (o Tampermonkey checa o `@updateURL` periodicamente).
 
 ## ARC Ledger
-Abre sozinho no Pioneer. Marca em vermelho (⚠) os itens já enviados pro destinatário atual (anti-duplicação) e **registra o envio automaticamente** ao apertar o botão **SUPER**. Tem abas Send / Receive / Inspect / Snapshot / Config (migrar/clonar conta + backup). Dados ficam só no navegador (`localStorage`).
+Abre sozinho no **Pioneer** e no **Daxus** (`web.daxus.live`). **Esmaece** (escurece) os itens já enviados pro destinatário atual — os mandáveis ficam acesos, fácil de selecionar os que faltam. Clique no **topo** do painel pra recolher/expandir. Abas Send / Receive / Inspect / Snapshot / Config (migrar/clonar conta + backup). Dados ficam só no navegador (`localStorage`).
 
-> Deixe o campo **Recipient** preenchido pro auto-log do SUPER funcionar.
+- **Pioneer:** ao apertar o botão **SUPER**, registra o envio automaticamente (deixe o **Recipient** preenchido).
+- **Daxus:** não tem botão SUPER → o registro é **manual** (botão *Mark as sent*).
 
 ## ARC Cookie Switcher
 Botão flutuante **⇄ Conta** pra alternar entre contas. Os tokens ficam **só** no storage do Tampermonkey (você cola 1x) — **nunca** no código.
