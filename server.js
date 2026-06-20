@@ -1293,35 +1293,65 @@ app.get('/api/dashboard/stats', authenticate, async (req, res) => {
 // TAXA DE CÂMBIO (USD-BRL) E ATUALIZAÇÃO DIÁRIA
 // ==========================================
 
-const https = require('https');
-let cachedUsdToBrlRate = 5.40; // Valor fallback caso a API falhe
+let cachedUsdToBrlRate = 5.15; // Valor fallback atualizado caso todas as APIs falhem
 
-function fetchExchangeRate() {
-  return new Promise((resolve) => {
-    https.get('https://economia.awesomeapi.com.br/last/USD-BRL', (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed && parsed.USDBRL && parsed.USDBRL.bid) {
-            const rate = parseFloat(parsed.USDBRL.bid);
-            if (!isNaN(rate) && rate > 0) {
-              cachedUsdToBrlRate = rate;
-              console.log(`[Cotação Dólar] Cotação atualizada com sucesso: 1 USD = R$ ${cachedUsdToBrlRate.toFixed(4)}`);
-            }
-          }
-          resolve(cachedUsdToBrlRate);
-        } catch (e) {
-          console.error('[Cotação Dólar] Erro ao processar retorno da API de cotação:', e.message);
-          resolve(cachedUsdToBrlRate);
+async function fetchExchangeRate() {
+  // 1. Tentar AwesomeAPI (Principal)
+  try {
+    const response = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+    if (response.ok) {
+      const parsed = await response.json();
+      if (parsed && parsed.USDBRL && parsed.USDBRL.bid) {
+        const rate = parseFloat(parsed.USDBRL.bid);
+        if (!isNaN(rate) && rate > 0) {
+          cachedUsdToBrlRate = rate;
+          console.log(`[Cotação Dólar - AwesomeAPI] Atualizada: 1 USD = R$ ${cachedUsdToBrlRate.toFixed(4)}`);
+          return cachedUsdToBrlRate;
         }
-      });
-    }).on('error', (e) => {
-      console.error('[Cotação Dólar] Erro ao buscar cotação atualizada:', e.message);
-      resolve(cachedUsdToBrlRate);
-    });
-  });
+      }
+    }
+  } catch (e) {
+    console.warn('[Cotação Dólar - AwesomeAPI] Falhou, tentando ExchangeRate-API...', e.message);
+  }
+
+  // 2. Tentar ExchangeRate-API (Backup 1)
+  try {
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    if (response.ok) {
+      const parsed = await response.json();
+      if (parsed && parsed.rates && parsed.rates.BRL) {
+        const rate = parseFloat(parsed.rates.BRL);
+        if (!isNaN(rate) && rate > 0) {
+          cachedUsdToBrlRate = rate;
+          console.log(`[Cotação Dólar - ExchangeRate-API] Atualizada: 1 USD = R$ ${cachedUsdToBrlRate.toFixed(4)}`);
+          return cachedUsdToBrlRate;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[Cotação Dólar - ExchangeRate-API] Falhou, tentando OpenER-API...', e.message);
+  }
+
+  // 3. Tentar OpenER-API (Backup 2)
+  try {
+    const response = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (response.ok) {
+      const parsed = await response.json();
+      if (parsed && parsed.rates && parsed.rates.BRL) {
+        const rate = parseFloat(parsed.rates.BRL);
+        if (!isNaN(rate) && rate > 0) {
+          cachedUsdToBrlRate = rate;
+          console.log(`[Cotação Dólar - OpenER-API] Atualizada: 1 USD = R$ ${cachedUsdToBrlRate.toFixed(4)}`);
+          return cachedUsdToBrlRate;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[Cotação Dólar - OpenER-API] Falhou.', e.message);
+  }
+
+  console.log(`[Cotação Dólar] Usando valor em cache/fallback: R$ ${cachedUsdToBrlRate.toFixed(4)}`);
+  return cachedUsdToBrlRate;
 }
 
 let lastFetchTime = 0;
