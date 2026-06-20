@@ -321,6 +321,7 @@ async function loadDashboardStats() {
           <div class="stat-desc" style="color: var(--text-muted);">Cotação diária: 1 USD = R$ ${stats.usdToBrlRate.toFixed(4)}</div>
         </div>
       `;
+      lucide.createIcons();
 
       // Montar painel esquerdo: Estoque por Conta (Admin)
       const leftPanel = document.createElement('div');
@@ -459,6 +460,7 @@ async function loadDashboardStats() {
           <div class="stat-desc">${stats.period === 'all' ? 'Meta inativa para Todo o Período' : `Meta ${periodDesc}: ${contasFeitas} / ${adjustedGoalContas} contas cheias`}</div>
         </div>
       `;
+      lucide.createIcons();
 
       // Montar painel esquerdo: Minhas Atividades Recentes (Duper)
       const leftPanel = document.createElement('div');
