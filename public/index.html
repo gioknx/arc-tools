@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3.3">
+  <link rel="stylesheet" href="style.css?v=3.4">
   <!-- Lucide Icons (CDN) -->
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -876,6 +876,27 @@
             </button>
           </div>
           <div class="panel-body" style="padding: 20px;">
+            <!-- Barra de Filtros de Licenças -->
+            <div class="actions-bar" style="margin-bottom: 20px; justify-content: flex-start; gap: 15px;">
+              <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                <label for="filter-mother-status" style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Contas Mãe:</label>
+                <select id="filter-mother-status" style="padding: 8px 12px; font-size: 13px;">
+                  <option value="all">Todas</option>
+                  <option value="active">Ativas</option>
+                  <option value="banned">Banidas</option>
+                  <option value="refunded">Reembolsadas</option>
+                </select>
+              </div>
+              <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                <label for="filter-child-token-status" style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Contas Filha:</label>
+                <select id="filter-child-token-status" style="padding: 8px 12px; font-size: 13px;">
+                  <option value="all">Todas</option>
+                  <option value="empty">Vazias</option>
+                  <option value="filling">Enchendo</option>
+                  <option value="full">Cheias (FULL)</option>
+                </select>
+              </div>
+            </div>
             <div id="licenses-tree-container">
               <p class="text-center text-muted" style="padding: 40px 0;">Nenhuma licença cadastrada.</p>
             </div>
@@ -1254,6 +1275,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=3.3"></script>
+  <script src="app.js?v=3.4"></script>
 </body>
 </html>

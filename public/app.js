@@ -10,6 +10,7 @@ const STATE = {
   activeClientId: null,
   stockViewMode: 'detailed', // Priorizar 'detailed' (Por Conta) para itens espelhados
   reorderMode: false,
+  licenses: [],
   bags: Array.from({ length: 1 }, (_, i) => ({
     id: i + 1,
     isHalf: false,
@@ -2946,6 +2947,7 @@ const STATE_LICENSES_COLLAPSED = {};
 async function loadLicensesData() {
   try {
     const licenses = await apiFetch('/api/licenses');
+    STATE.licenses = licenses;
     renderLicensesTree(licenses);
     
     // Atualizar dropdowns nos modais
@@ -3089,6 +3091,14 @@ function updateLicenseFormFields() {
 
 document.getElementById('license-type').addEventListener('change', updateLicenseFormFields);
 
+// Filtros da árvore de licenças
+document.getElementById('filter-mother-status').addEventListener('change', () => {
+  renderLicensesTree(STATE.licenses || []);
+});
+document.getElementById('filter-child-token-status').addEventListener('change', () => {
+  renderLicensesTree(STATE.licenses || []);
+});
+
 // Abrir modal de cadastro
 const licenseModal = document.getElementById('license-modal');
 document.getElementById('btn-open-license-modal').addEventListener('click', () => {
@@ -3163,23 +3173,53 @@ function renderLicensesTree(licenses) {
   container.innerHTML = '';
   const isAdmin = STATE.user && STATE.user.role === 'admin';
 
-  const mothers = licenses.filter(l => l.type === 'mother');
-  const children = licenses.filter(l => l.type === 'child');
+  // Obter valores dos filtros
+  const filterMother = document.getElementById('filter-mother-status')?.value || 'all';
+  const filterChild = document.getElementById('filter-child-token-status')?.value || 'all';
 
-  if (mothers.length === 0) {
-    container.innerHTML = '<p class="text-center text-muted" style="padding: 40px 0;">Nenhuma licença cadastrada.</p>';
+  let mothers = licenses.filter(l => l.type === 'mother');
+  let children = licenses.filter(l => l.type === 'child');
+
+  // Filtrar contas mãe
+  if (filterMother !== 'all') {
+    mothers = mothers.filter(m => m.status === filterMother);
+  }
+
+  // Filtrar contas filha para cada mãe, e opcionalmente filtrar contas mãe que não tenham filhas correspondentes
+  const mothersToShow = [];
+  const childrenMap = new Map();
+
+  mothers.forEach(m => {
+    const myChildren = children.filter(c => c.mother_id === m.id);
+    let matchedChildren = myChildren;
+
+    if (filterChild !== 'all') {
+      matchedChildren = myChildren.filter(c => c.token_status === filterChild);
+      // Se filtro de filha ativo, só mostra a mãe se ela tiver pelo menos uma filha correspondente
+      if (matchedChildren.length > 0) {
+        mothersToShow.push(m);
+        childrenMap.set(m.id, matchedChildren);
+      }
+    } else {
+      mothersToShow.push(m);
+      childrenMap.set(m.id, matchedChildren);
+    }
+  });
+
+  if (mothersToShow.length === 0) {
+    container.innerHTML = '<p class="text-center text-muted" style="padding: 40px 0;">Nenhuma licença cadastrada ou correspondente aos filtros.</p>';
     return;
   }
 
   const treeDiv = document.createElement('div');
   treeDiv.className = 'licenses-tree';
 
-  mothers.forEach(m => {
+  mothersToShow.forEach(m => {
     const card = document.createElement('div');
     card.className = 'license-mother-card';
     
     // Obter contas filhas desta mãe
-    const myChildren = children.filter(c => c.mother_id === m.id);
+    const myChildren = childrenMap.get(m.id) || [];
     
     // Estado do colapso
     if (STATE_LICENSES_COLLAPSED[m.id] === undefined) {
