@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arc Raiders - RMT Controller</title>
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Lucide Icons (CDN) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  
+  <!-- ================= CONTAINER DE LOGIN ================= -->
+  <div id="login-container" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo">
+          <i data-lucide="shield-alert" class="logo-icon animate-pulse"></i>
+          <h1>ARC RAIDERS</h1>
+          <span>RMT MANAGEMENT SYSTEM</span>
+        </div>
+      </div>
+      <form id="login-form" class="login-form">
+        <div class="form-group">
+          <label for="username">Usuário</label>
+          <div class="input-wrapper">
+            <i data-lucide="user"></i>
+            <input type="text" id="username" placeholder="Digite seu usuário" required autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="password" placeholder="Digite sua senha" required autocomplete="current-password">
+          </div>
+        </div>
+        <div id="login-error" class="error-msg hidden"></div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Entrar no Painel <i data-lucide="arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= CONTAINER PRINCIPAL (DASHBOARD) ================= -->
+  <div id="app-container" class="app-layout hidden">
+    <!-- Barra Lateral (Sidebar) -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <i data-lucide="shield" class="brand-icon"></i>
+        <div>
+          <h2>ARC RMT</h2>
+          <span>Controller</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i> <span>Dashboard</span>
+        </a>
+        <a href="#estoque" class="nav-item" data-tab="estoque">
+          <i data-lucide="package"></i> <span>Estoque</span>
+        </a>
+        <a href="#transferir" class="nav-item" data-tab="transferir">
+          <i data-lucide="arrow-left-right"></i> <span>Registrar Mov</span>
+        </a>
+        <a href="#historico" class="nav-item" data-tab="historico">
+          <i data-lucide="history"></i> <span>Histórico</span>
+        </a>
+        <a href="#contas" class="nav-item" data-tab="contas">
+          <i data-lucide="database"></i> <span>Contas de Jogo</span>
+        </a>
+        <a href="#clientes" class="nav-item admin-only hidden" data-tab="clientes">
+          <i data-lucide="user-check"></i> <span>Clientes</span>
+        </a>
+        <a href="#itens" class="nav-item admin-only hidden" data-tab="itens">
+          <i data-lucide="tag"></i> <span>Gerenciar Itens</span>
+        </a>
+        <a href="#equipe" class="nav-item admin-only hidden" data-tab="equipe">
+          <i data-lucide="users"></i> <span>Gerenciar Equipe</span>
+        </a>
+        <a href="#financeiro" class="nav-item admin-only hidden" data-tab="financeiro">
+          <i data-lucide="wallet"></i> <span>Financeiro</span>
+        </a>
+        <a href="#dev" class="nav-item admin-only hidden" data-tab="dev">
+          <i data-lucide="terminal"></i> <span>Dev / Reset</span>
+        </a>
+        <a href="#licencas" class="nav-item" data-tab="licencas">
+          <i data-lucide="key"></i> <span>Licenças</span>
+        </a>
+        <a href="#minhas-info" class="nav-item operator-only hidden" data-tab="minhas-info">
+          <i data-lucide="key-round"></i> <span>Suas Informações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="avatar" id="user-avatar">U</div>
+          <div class="user-details">
+            <span class="user-name" id="display-username">Usuário</span>
+            <span class="user-role" id="display-role">Cargo</span>
+          </div>
+        </div>
+        <button id="btn-logout" class="btn-logout-icon" title="Sair do Sistema">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área Principal de Conteúdo -->
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-title">
+          <h1 id="page-title">Dashboard</h1>
+          <p id="page-subtitle" class="text-muted">Visão geral do estoque e atividade recente</p>
+        </div>
+        <div class="header-actions">
+          <button id="btn-refresh" class="btn btn-outline" title="Atualizar Dados">
+            <i data-lucide="refresh-cw"></i> Sincronizar
+          </button>
+        </div>
+      </header>
+
+      <!-- ================= ABA: DASHBOARD ================= -->
+      <section id="tab-dashboard" class="tab-content">
+        <div class="actions-bar" style="justify-content: flex-end; margin-bottom: -15px;">
+          <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+            <label for="db-period-filter" style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Período:</label>
+            <select id="db-period-filter" style="padding: 6px 12px; font-size: 13px;">
+              <option value="today" selected>Hoje (Meta Diária)</option>
+              <option value="7days">Últimos 7 dias</option>
+              <option value="30days">Últimos 30 dias</option>
+              <option value="all">Todo o período</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cards de Estatísticas (Preenchido dinamicamente pelo JS conforme role) -->
+        <div class="stats-grid" id="dashboard-stats-grid">
+          <!-- Inserido dinamicamente via JS -->
+        </div>
+
+        <div class="dashboard-layout-grid">
+          <!-- Estoque Consolidado Rápido -->
+          <div class="dashboard-panel panel-large">
+            <div class="panel-header">
+              <h3><i data-lucide="package"></i> Estoque Consolidado (Total Geral)</h3>
+              <button class="btn btn-link" onclick="switchTab('estoque')">Ver Detalhes</button>
+            </div>
+            <div class="panel-body">
+              <div class="table-container">
+                <table class="data-table" id="dashboard-stock-table">
+                  <thead>
+                    <tr>
+                      <th>Recurso</th>
+                      <th>Categoria</th>
+                      <th class="text-right">Quantidade Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Inserido dinamicamente via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Atividades Recentes -->
+          <div class="dashboard-panel panel-small">
+            <div class="panel-header">
+              <h3><i data-lucide="list-todo"></i> Últimas Atividades</h3>
+              <button class="btn btn-link" onclick="switchTab('historico')">Ver Tudo</button>
+            </div>
+            <div class="panel-body">
+              <div class="activity-feed" id="dashboard-recent-activities">
+                <!-- Inserido dinamicamente via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: ESTOQUE ================= -->
+      <section id="tab-estoque" class="tab-content hidden">
+        <div class="actions-bar">
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; flex-grow: 1;">
+            <div class="search-box" style="max-width: 280px; width: 100%;">
+              <i data-lucide="search"></i>
+              <input type="text" id="stock-search" placeholder="Buscar item...">
+            </div>
+            
+            <div id="account-filters-container" class="filter-group" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <select id="stock-filter-acc-type">
+                <option value="" selected>Todas as Contas</option>
+                <option value="duper">Apenas Dupers (Farm)</option>
+                <option value="cofre">Apenas Cofres (Mulas)</option>
+              </select>
+              
+              <div class="search-box" style="max-width: 180px; width: 100%;">
+                <i data-lucide="search"></i>
+                <input type="text" id="stock-search-acc" placeholder="Buscar conta...">
+              </div>
+            </div>
+          </div>
+
+          <div class="view-toggle-buttons">
+            <button id="btn-toggle-reorder" class="btn btn-outline" style="border-color: var(--secondary); color: var(--secondary); margin-right: 8px;">
+              <i data-lucide="grip-vertical"></i> Organizar Itens
+            </button>
+            <button id="btn-view-by-account" class="btn btn-primary">
+              <i data-lucide="folder-git"></i> Por Conta (Espelhamento)
+            </button>
+            <button id="btn-view-consolidated" class="btn btn-outline">
+              <i data-lucide="layers"></i> Consolidado Geral
+            </button>
+          </div>
+        </div>
+
+        <!-- Visão Detalhada por Conta -->
+        <div id="stock-by-account-view" class="stock-view-mode">
+          <div class="table-card">
+            <div class="table-container">
+              <table class="data-table" id="detailed-stock-table">
+                <thead>
+                  <tr id="detailed-stock-header">
+                    <!-- Cabeçalhos dinâmicos (Contas nas colunas) -->
+                  </tr>
+                </thead>
+                <tbody id="detailed-stock-body">
+                  <!-- Estoque por conta dinâmico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visão Consolidada -->
+        <div id="stock-consolidated-view" class="stock-view-mode hidden">
+          <div class="stock-cards-grid" id="consolidated-stock-cards">
+            <!-- Cards de estoque dinâmicos -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: REGISTRAR MOVIMENTAÇÃO ================= -->
+      <section id="tab-transferir" class="tab-content hidden">
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+          
+          <!-- LADO ESQUERDO: FORMULÁRIO DE REGISTRO MANUAL -->
+          <div class="form-container-card" style="flex: 1 1 550px; margin-bottom: 0;">
+            <div class="panel-header">
+              <h3><i data-lucide="arrow-left-right"></i> Novo Registro de Movimentação</h3>
+              <p class="text-muted">Selecione o tipo de ação para atualizar o estoque automaticamente</p>
+            </div>
+            <div class="panel-body">
+              <form id="transaction-form" class="styled-form">
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="tx-type">Tipo de Operação</label>
+                    <select id="tx-type" required>
+                      <option value="transfer" selected>Transferência entre Contas</option>
+                      <option value="fill_account">Encher Conta (Cópia Sem Subtrair)</option>
+                      <option value="sale">Venda para Cliente (Estoque Preservado)</option>
+                      <option value="adjust_add">Adicionar Ajuste (Entrada Externa / Farm)</option>
+                      <option value="adjust_sub">Subtrair Ajuste (Perda / Uso)</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="tx-helper">Quem Ajudou? (Opcional)</label>
+                    <select id="tx-helper">
+                      <option value="">Ninguém (Apenas eu)</option>
+                      <!-- Inserido dinamicamente via JS -->
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Contas de Origem e Destino movidas para cima (antes das bags) -->
+                <div class="form-row">
+                  <div class="form-group col-6" id="group-from-account">
+                    <label for="tx-from-account">Conta de Origem (Sai Item)</label>
+                    <select id="tx-from-account">
+                      <option value="" disabled selected>Selecione a conta...</option>
+                      <!-- Inserido dinamicamente via JS -->
+                    </select>
+                  </div>
+                  <div class="form-group col-6" id="group-to-account">
+                    <label for="tx-to-account">Conta de Destino (Entra Item)</label>
+                    <select id="tx-to-account">
+                      <option value="" disabled selected>Selecione a conta...</option>
+                      <!-- Inserido dinamicamente via JS -->
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Seção de Gerenciamento de Bags -->
+                <div class="bags-section-container" style="margin-top: 15px; margin-bottom: 10px;">
+                  <div class="form-row" style="align-items: center; margin-bottom: 15px;">
+                    <div class="form-group col-6">
+                      <label for="tx-bags-count" style="font-size: 14px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="backpack" style="width: 16px; height: 16px; color: var(--primary);"></i> 
+                        Quantas Bags deseja enviar?
+                      </label>
+                      <input type="number" id="tx-bags-count" min="1" max="15" value="1" style="width: 100%;" required>
+                    </div>
+                    <div class="form-group col-6" style="padding-top: 20px;">
+                      <span style="font-size: 12px; color: var(--text-muted);">Preencha cada Bag abaixo (26 itens por Bag ou 13/13 por Half Bag).</span>
+                    </div>
+                  </div>
+                  
+                  <div id="bags-list-container" class="bags-grid" style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 15px;">
+                    <!-- Cards das Bags inseridos via JS -->
+                  </div>
+                </div>
+
+                <!-- Painel de Alerta de Estoque (Sobra/Falta) -->
+                <div id="stock-feedback-panel" class="stock-feedback-container hidden" style="margin-bottom: 20px; padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-muted);">
+                  <!-- Resumo dinâmico inserido via JS -->
+                </div>
+
+                <!-- Campos do Cliente (Ocultos por padrão) -->
+                <div id="group-client-fields" class="form-row hidden" style="margin-top: 15px; border: 1px dashed var(--secondary); padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.15);">
+                  <div class="form-group col-6">
+                    <label for="tx-client-mode">Seleção de Cliente</label>
+                    <select id="tx-client-mode">
+                      <option value="existing" selected>Cliente Cadastrado</option>
+                      <option value="new">Cadastrar Novo Cliente</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Cliente Existente -->
+                  <div class="form-group col-6" id="group-client-existing">
+                    <label for="tx-client-id">Selecione o Cliente</label>
+                    <select id="tx-client-id">
+                      <option value="" disabled selected>Selecione um cliente...</option>
+                    </select>
+                  </div>
+                  
+                  <!-- Novo Cliente -->
+                  <div class="form-group col-6 hidden" id="group-client-new">
+                    <label for="tx-client-name">Nome do Cliente / ID Embark</label>
+                    <input type="text" id="tx-client-name" placeholder="Ex: Player#12345">
+                  </div>
+                </div>
+
+                <!-- Informações Adicionais de Venda (Valor, Moeda, Redução de Estoque) -->
+                <div id="group-sale-fields" class="form-row hidden" style="margin-top: 15px;">
+                  <div class="form-group col-6">
+                    <label for="tx-sale-value">Valor do Pedido</label>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="number" id="tx-sale-value" step="0.01" min="0" placeholder="Ex: 50.00" style="flex-grow: 1;">
+                      <select id="tx-sale-currency" style="width: 100px; padding-left: 10px;">
+                        <option value="BRL" selected>Reais (R$)</option>
+                        <option value="USD">Dólar ($)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group col-6" style="justify-content: center; align-items: flex-start; padding-top: 20px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                      <input type="checkbox" id="tx-reduce-stock" style="width: 18px; height: 18px; cursor: pointer;">
+                      Reduzir itens do Estoque da Conta de Origem
+                    </label>
+                    <span style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Padrão: NÃO reduz (Estoque infinito/Duplicação)</span>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                  <label for="tx-notes">Notas / Observações</label>
+                  <textarea id="tx-notes" rows="3" placeholder="Ex: Transferido para mula de vendas, farmado no setor X..."></textarea>
+                </div>
+
+                <div id="tx-error" class="error-msg hidden"></div>
+                <div id="tx-success" class="success-msg hidden"></div>
+
+                <div class="form-actions">
+                  <button type="reset" class="btn btn-outline" id="btn-reset-bags">Limpar Remessa</button>
+                  <button type="submit" class="btn btn-primary" id="btn-submit-bags">Finalizar Entrega</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- LADO DIREITO: INTEGRAÇÃO COM ARC LEDGER -->
+          <div class="form-container-card" style="flex: 1 1 350px; max-width: 450px; margin-bottom: 0;">
+            <div class="panel-header" style="border-bottom: 1px solid var(--border-muted); padding-bottom: 12px; margin-bottom: 15px;">
+              <h3 style="display: flex; align-items: center; gap: 8px;"><i data-lucide="plug" style="color: var(--primary);"></i> Integração ARC Ledger</h3>
+              <p class="text-muted" style="margin-top: 4px;">Sincronize transações e estoques de forma automática e em tempo real</p>
+            </div>
+            <div class="panel-body">
+              <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; line-height: 1.4;">
+                <strong>💡 Chega de retrabalho!</strong> O script do Tampermonkey que você usa no Pioneer/Daxus agora pode atualizar este painel instantaneamente.
+              </div>
+              
+              <div class="form-group" style="margin-bottom: 15px;">
+                <a href="/arc_ledger.user.js" target="_blank" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; font-weight: 600; padding: 10px;">
+                  <i data-lucide="download"></i> Instalar / Atualizar Script
+                </a>
+              </div>
+              
+              <h4 style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="list-checks" style="width: 14px; height: 14px; color: var(--secondary);"></i> Passos para configurar:
+              </h4>
+              <ol style="margin-left: 18px; padding-left: 0; font-size: 12px; line-height: 1.5; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                <li>Instale a extensão <strong>Tampermonkey</strong> no seu navegador.</li>
+                <li>Clique no botão acima para abrir a instalação do script <strong>ARC Ledger</strong>.</li>
+                <li>No site do Pioneer ou Daxus, abra o painel do script e clique na aba <strong>Config (⚙ Config)</strong>.</li>
+                <li>No campo <strong>Usuário do Dashboard</strong>, digite o seu nome de usuário (caso seja operador) e salve.</li>
+                <li>Clique em <strong>Sincronizar Histórico Completo</strong> se quiser carregar as transações antigas de uma vez só.</li>
+              </ol>
+              
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-muted); font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="shield-check" style="color: var(--success); width: 14px; height: 14px;"></i>
+                <span>Status da Conectividade: <strong>Pronto (Porta 3000)</strong></span>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- ================= ABA: HISTÓRICO ================= -->
+      <section id="tab-historico" class="tab-content hidden">
+        <div class="actions-bar">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="history-search" placeholder="Buscar no histórico por item, operador, conta ou notas...">
+          </div>
+          <div class="filter-group">
+            <select id="filter-tx-type">
+              <option value="">Todos os Tipos</option>
+              <option value="transfer">Transferências</option>
+              <option value="fill_account">Encher Contas</option>
+              <option value="sale">Vendas para Clientes</option>
+              <option value="adjust_add">Entradas (Farm)</option>
+              <option value="adjust_sub">Ajustes de Saída</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-container">
+            <table class="data-table" id="history-table">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Operação</th>
+                  <th>Item</th>
+                  <th class="text-right">Quantidade</th>
+                  <th>Origem</th>
+                  <th>Destino</th>
+                  <th>Operador</th>
+                  <th>Ajudante</th>
+                  <th>Notas</th>
+                  <th class="text-right admin-only hidden">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Inserido dinamicamente via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: CONTAS DE JOGO ================= -->
+      <section id="tab-contas" class="tab-content hidden">
+        <div class="actions-bar">
+          <p class="section-desc">Controle de credenciais, status e notas de cada conta de Arc Raiders.</p>
+          <button id="btn-new-account" class="btn btn-primary admin-only hidden">
+            <i data-lucide="plus"></i> Cadastrar Nova Conta
+          </button>
+        </div>
+
+        <div class="accounts-grid" id="accounts-cards-container">
+          <!-- Cards de contas inseridos via JS -->
+        </div>
+
+        <!-- Modal Cadastro/Edição de Conta (Admin Only) -->
+        <div id="account-modal" class="modal hidden">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="account-modal-title">Nova Conta</h3>
+              <button class="btn-close" id="btn-close-account-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+              <form id="account-form" class="styled-form">
+                <input type="hidden" id="acc-id">
+                <div class="form-group">
+                  <label for="acc-name">Nome da Conta (Apelido/Identificador)</label>
+                  <input type="text" id="acc-name" placeholder="Ex: Farm_Raider_01" required>
+                </div>
+                <div class="form-group">
+                  <label for="acc-login-method">Forma de Acesso (Login / Launcher / Steam ID)</label>
+                  <input type="text" id="acc-login-method" placeholder="Ex: Steam: login_user_123">
+                </div>
+                <div class="form-group">
+                  <label for="acc-token">Token / Credenciais / Senha Temp</label>
+                  <input type="text" id="acc-token" placeholder="Insira o Token, cookie ou senha">
+                </div>
+                <div class="form-group">
+                  <label for="acc-status">Status da Conta</label>
+                  <select id="acc-status" required>
+                    <option value="active" selected>Ativa / Disponível</option>
+                    <option value="inactive">Inativa / Em espera</option>
+                    <option value="banned">Banida (Excluída das somas de estoque)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="acc-type">Tipo de Conta</label>
+                  <select id="acc-type" required>
+                    <option value="duper" selected>Duper (Farming/Operadora)</option>
+                    <option value="cofre">Cofre (Armazenamento/Mula)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="acc-notes">Notas / Detalhes de Segurança</label>
+                  <textarea id="acc-notes" rows="2" placeholder="Ex: IP fixo no proxy X, usada como mula principal..."></textarea>
+                </div>
+                
+                <div id="acc-error" class="error-msg hidden"></div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-outline" id="btn-cancel-account-modal">Cancelar</button>
+                  <button type="submit" class="btn btn-primary" id="btn-submit-account-modal">Salvar Conta</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: CLIENTES ================= -->
+      <section id="tab-clientes" class="tab-content hidden">
+        <div class="dashboard-layout-grid">
+          <!-- Lista de Clientes -->
+          <div class="dashboard-panel panel-small">
+            <div class="panel-header">
+              <h3><i data-lucide="contact-2"></i> Clientes Cadastrados</h3>
+            </div>
+            <div class="panel-body">
+              <div class="search-box" style="margin-bottom: 15px;">
+                <i data-lucide="search"></i>
+                <input type="text" id="client-search" placeholder="Buscar cliente...">
+              </div>
+              <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table class="data-table" id="clients-list-table">
+                  <thead>
+                    <tr>
+                      <th>Nome / ID Embark</th>
+                    </tr>
+                  </thead>
+                  <tbody id="clients-list-body">
+                    <!-- Preenchido via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ficha do Cliente -->
+          <div class="dashboard-panel panel-large" id="client-details-panel">
+            <div class="panel-header">
+              <h3><i data-lucide="user-check"></i> Ficha do Cliente</h3>
+            </div>
+            <div class="panel-body" id="client-details-body">
+              <div class="text-center text-muted" style="padding: 60px 0;">
+                <i data-lucide="user" style="width: 48px; height: 48px; opacity: 0.3; margin-bottom: 10px;"></i>
+                <p>Selecione um cliente na lista para ver suas estatísticas de compras e histórico de pedidos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: GERENCIAR EQUIPE (ADMIN ONLY) ================= -->
+      <section id="tab-equipe" class="tab-content hidden">
+        <div class="dashboard-layout-grid">
+          <!-- Lista de Membros da Equipe -->
+          <div class="dashboard-panel panel-large">
+            <div class="panel-header">
+              <h3><i data-lucide="users-2"></i> Operadores & Administradores</h3>
+            </div>
+            <div class="panel-body">
+              <div class="table-container">
+                <table class="data-table" id="team-table">
+                  <thead>
+                    <tr>
+                      <th>Usuário</th>
+                      <th>Apelido</th>
+                      <th>Cargo/Role</th>
+                      <th>Data de Criação</th>
+                      <th class="text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Inserido dinamicamente via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário Criar Novo Usuário -->
+          <div class="dashboard-panel panel-small">
+            <div class="panel-header">
+              <h3><i data-lucide="user-plus"></i> Novo Operador</h3>
+            </div>
+            <div class="panel-body">
+              <form id="user-form" class="styled-form">
+                <div class="form-group">
+                  <label for="new-username">Nome de Usuário</label>
+                  <input type="text" id="new-username" placeholder="Ex: joao_farm" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                  <label for="new-nickname">Apelido (Nome de preferência)</label>
+                  <input type="text" id="new-nickname" placeholder="Ex: João">
+                </div>
+                <div class="form-group">
+                  <label for="new-password">Senha de Acesso</label>
+                  <input type="password" id="new-password" placeholder="Defina a senha" required autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                  <label for="new-role">Cargo</label>
+                  <select id="new-role" required>
+                    <option value="operator" selected>Operador (Duper - Apenas registra e vê estoque)</option>
+                    <option value="admin">Administrador (Controle completo, vê tokens)</option>
+                  </select>
+                </div>
+                <div id="user-error" class="error-msg hidden"></div>
+                <div id="user-success" class="success-msg hidden"></div>
+                <button type="submit" class="btn btn-primary btn-block">Adicionar Membro</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: CADASTRO DE ITENS (ADMIN ONLY) ================= -->
+      <section id="tab-itens" class="tab-content hidden">
+        <div class="dashboard-layout-grid">
+          <!-- Tabela de Itens -->
+          <div class="dashboard-panel panel-large">
+            <div class="panel-header">
+              <h3><i data-lucide="tag"></i> Itens Catalogados</h3>
+            </div>
+            <div class="panel-body">
+              <div class="table-container">
+                <table class="data-table" id="items-table">
+                  <thead>
+                    <tr>
+                      <th>Nome do Item</th>
+                      <th>Categoria</th>
+                      <th class="text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Inserido dinamicamente via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário Criar/Editar Item -->
+          <div class="dashboard-panel panel-small">
+            <div class="panel-header">
+              <h3 id="item-form-title"><i data-lucide="plus"></i> Novo Item</h3>
+            </div>
+            <div class="panel-body">
+              <form id="item-form" class="styled-form">
+                <input type="hidden" id="item-id">
+                <div class="form-group">
+                  <label for="item-name">Nome do Item</label>
+                  <input type="text" id="item-name" placeholder="Ex: Placa de Titânio" required>
+                </div>
+                <div class="form-group">
+                  <label for="item-category">Categoria</label>
+                  <input type="text" id="item-category" placeholder="Ex: Recursos Raros" required>
+                </div>
+                <div class="form-group">
+                  <label for="item-color">Cor do Destaque (CSS Badge)</label>
+                  <select id="item-color" required>
+                    <option value="gray" selected>Cinza (Padrão/Nenhum)</option>
+                    <option value="cyan">Ciano (Azul Neon)</option>
+                    <option value="purple">Roxo</option>
+                    <option value="pink">Rosa</option>
+                    <option value="yellow">Amarelo</option>
+                    <option value="green">Verde</option>
+                    <option value="orange">Laranja</option>
+                    <option value="red">Vermelho</option>
+                  </select>
+                </div>
+                <div id="item-error" class="error-msg hidden"></div>
+                <div id="item-success" class="success-msg hidden"></div>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-outline hidden" id="btn-cancel-item-edit">Cancelar</button>
+                  <button type="submit" class="btn btn-primary" id="btn-submit-item">Salvar Item</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: FINANCEIRO (ADMIN ONLY) ================= -->
+      <section id="tab-financeiro" class="tab-content hidden">
+        <div class="dashboard-layout-grid">
+          <!-- Visão Geral de Caixa -->
+          <div class="dashboard-panel panel-large">
+            <div class="panel-header">
+              <h3><i data-lucide="banknote"></i> Caixa da Empresa</h3>
+              <p class="text-muted">Total acumulado em caixa (Vendas + Entradas Manuais - Saídas Manuais)</p>
+            </div>
+            <div class="panel-body">
+              <!-- Grid de Caixa -->
+              <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 20px;">
+                <div class="stat-card" style="border-left: 4px solid var(--primary); background: rgba(16, 185, 129, 0.05); box-shadow: 0 0 10px rgba(16, 185, 129, 0.05);">
+                  <span class="stat-title">Saldo Consolidado (R$)</span>
+                  <h2 class="stat-value" id="fin-net-consolidated-brl">R$ 0,00</h2>
+                  <span class="stat-desc" style="color: var(--status-active);">Faturamento Total em Real</span>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid var(--secondary);">
+                  <span class="stat-title">Caixa em Real (BRL)</span>
+                  <h2 class="stat-value" id="fin-net-brl">R$ 0,00</h2>
+                  <span class="stat-desc" id="fin-sales-brl-desc">Vendas: R$ 0,00</span>
+                </div>
+                <div class="stat-card" style="border-left: 4px solid #A855F7;">
+                  <span class="stat-title">Caixa em Dólar (USD)</span>
+                  <h2 class="stat-value" id="fin-net-usd">$0,00</h2>
+                  <span class="stat-desc" id="fin-sales-usd-desc">Vendas: $0.00</span>
+                </div>
+              </div>
+
+              <!-- Formulário Lançamento de Caixa -->
+              <div style="border: 1px solid var(--border-muted); padding: 15px; border-radius: 10px; background: rgba(255,255,255,0.02); margin-bottom: 20px;">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;"><i data-lucide="plus-circle" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Registrar Lançamento de Caixa</h4>
+                <form id="cashflow-form" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+                  <div style="flex: 2; min-width: 180px; display: flex; flex-direction: column; gap: 4px;">
+                    <label for="cf-description" style="font-size: 11px; color: var(--text-muted);">Descrição / Motivo</label>
+                    <input type="text" id="cf-description" placeholder="Ex: Saldo eldorado, Pagamento Servidor..." required style="padding: 8px;">
+                  </div>
+                  <div style="flex: 1; min-width: 100px; display: flex; flex-direction: column; gap: 4px;">
+                    <label for="cf-amount" style="font-size: 11px; color: var(--text-muted);">Valor</label>
+                    <input type="number" id="cf-amount" step="0.01" min="0.01" placeholder="0.00" required style="padding: 8px;">
+                  </div>
+                  <div style="width: 100px; display: flex; flex-direction: column; gap: 4px;">
+                    <label for="cf-currency" style="font-size: 11px; color: var(--text-muted);">Moeda</label>
+                    <select id="cf-currency" style="padding: 8px;">
+                      <option value="BRL" selected>BRL (R$)</option>
+                      <option value="USD">USD ($)</option>
+                    </select>
+                  </div>
+                  <div style="width: 110px; display: flex; flex-direction: column; gap: 4px;">
+                    <label for="cf-type" style="font-size: 11px; color: var(--text-muted);">Tipo</label>
+                    <select id="cf-type" style="padding: 8px;">
+                      <option value="inflow" selected>Entrada (+)</option>
+                      <option value="outflow">Saída (-)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="padding: 8px 16px; height: 38px;">Lançar</button>
+                </form>
+                <div id="cf-error" class="error-msg hidden" style="margin-top: 10px;"></div>
+                <div id="cf-success" class="success-msg hidden" style="margin-top: 10px;"></div>
+              </div>
+
+              <!-- Histórico Financeiro -->
+              <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">Fluxo de Caixa (Últimos Lançamentos Manuais)</h4>
+              <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                <table class="data-table" id="finance-cashflow-table">
+                  <thead>
+                    <tr>
+                      <th>Data</th>
+                      <th>Descrição</th>
+                      <th>Tipo</th>
+                      <th class="text-right">Valor</th>
+                      <th class="text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Inserido via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rendimento de Funcionários -->
+          <div class="dashboard-panel panel-small">
+            <div class="panel-header">
+              <h3><i data-lucide="users"></i> Rendimento da Equipe</h3>
+              <p class="text-muted">Desempenho e pagamentos de comissão calculados</p>
+            </div>
+            <div class="panel-body">
+              <div class="table-container">
+                <table class="data-table" id="finance-operators-table">
+                  <thead>
+                    <tr>
+                      <th>Operador</th>
+                      <th class="text-right">Runs/Partidas</th>
+                      <th class="text-right">Comissão Unit.</th>
+                      <th class="text-right">Total Devido</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Inserido via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: DEV / RESET (ADMIN ONLY) ================= -->
+      <section id="tab-dev" class="tab-content hidden">
+        <div class="form-container-card" style="max-width: 600px; margin: 0 auto;">
+          <div class="panel-header">
+            <h3><i data-lucide="terminal"></i> Dev / Painel de Backup e Reset</h3>
+            <p class="text-muted">Ferramentas de manutenção para resetar dados mantendo backups automáticos</p>
+          </div>
+          <div class="panel-body">
+            <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h4 style="color: #F87171; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                <i data-lucide="alert-triangle"></i> ATENÇÃO: Ação Destrutiva
+              </h4>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">
+                O reset irá excluir os dados das tabelas selecionadas. Antes de realizar qualquer exclusão, o sistema criará uma cópia completa de segurança do banco de dados na raiz do projeto (como <code style="background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 4px;">database_backup_[timestamp].db</code>).
+              </p>
+            </div>
+
+            <form id="dev-reset-form" class="styled-form">
+              <div class="form-group">
+                <label style="font-weight: 600; color: var(--text-main); margin-bottom: 10px; display: block;">Selecione os dados que deseja resetar:</label>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="reset-transactions" style="width: 18px; height: 18px; cursor: pointer;">
+                    Limpar histórico de movimentações (Zera estatísticas de runs/partidas e vendas)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="reset-stock" style="width: 18px; height: 18px; cursor: pointer;">
+                    Zerar todos os estoques de contas (Mulas e Dupers ficam vazias)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="reset-finance" style="width: 18px; height: 18px; cursor: pointer;">
+                    Limpar histórico financeiro (Entradas e saídas de caixa manual)
+                  </label>
+                </div>
+              </div>
+
+              <div id="dev-error" class="error-msg hidden" style="margin-top: 15px;"></div>
+              <div id="dev-success" class="success-msg hidden" style="margin-top: 15px; color: var(--status-active);"></div>
+
+              <div class="form-actions" style="margin-top: 25px;">
+                <button type="submit" class="btn btn-primary" style="background: var(--status-banned); border-color: var(--status-banned); font-weight: 700; width: 100%;">
+                  Executar Reset e Criar Cópia de Segurança
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: LICENÇAS (MÃE E FILHA) ================= -->
+      <section id="tab-licencas" class="tab-content hidden">
+        <div class="dashboard-panel">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+            <div>
+              <h3><i data-lucide="key"></i> Gerenciamento de Licenças</h3>
+              <p class="text-muted">Visualização de licenças mãe e suas respectivas filhas com controle de status</p>
+            </div>
+            <button id="btn-open-license-modal" class="btn btn-primary">
+              <i data-lucide="plus"></i> Cadastrar Licença
+            </button>
+          </div>
+          <div class="panel-body" style="padding: 20px;">
+            <div id="licenses-tree-container">
+              <p class="text-center text-muted" style="padding: 40px 0;">Nenhuma licença cadastrada.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ABA: SUAS INFORMAÇÕES (OPERATOR ONLY) ================= -->
+      <section id="tab-minhas-info" class="tab-content hidden">
+        <div class="dashboard-grid" style="grid-template-columns: 1fr;">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h3><i data-lucide="key-round"></i> Contas Designadas</h3>
+              <p class="text-muted">Logins atribuídos pelo administrador para uso nas operações</p>
+            </div>
+            <div class="panel-body">
+              <div id="my-logins-container">
+                <p class="text-center text-muted" style="padding: 30px;">Carregando suas contas...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal Gerenciar Logins do Operador (Admin Only) -->
+  <div id="operator-logins-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3>Gerenciar Contas do Operador</h3>
+        <button class="btn-close" id="btn-close-op-logins-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted" style="margin-bottom: 15px;">Operador: <strong id="op-logins-username">---</strong> <span class="text-muted" id="op-logins-count">(0/5 contas)</span></p>
+        <input type="hidden" id="op-logins-user-id">
+
+        <!-- Lista de logins existentes -->
+        <div id="op-logins-list" style="margin-bottom: 20px;"></div>
+
+        <!-- Formulário para adicionar novo login -->
+        <div id="op-login-add-section" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <h4 style="font-size: 14px; color: var(--primary); margin-bottom: 12px;"><i data-lucide="plus-circle" style="width:16px; height:16px; vertical-align: middle;"></i> Adicionar Nova Conta</h4>
+          <form id="op-login-add-form" class="styled-form">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label for="op-login-platform">Plataforma</label>
+                <select id="op-login-platform" required>
+                  <option value="steam">Steam</option>
+                  <option value="xbox">Xbox</option>
+                  <option value="other">Outra...</option>
+                </select>
+              </div>
+              <div class="form-group hidden" id="op-login-custom-group">
+                <label for="op-login-platform-custom">Nome da Plataforma</label>
+                <input type="text" id="op-login-platform-custom" placeholder="Ex: Epic Games">
+              </div>
+              <div class="form-group">
+                <label for="op-login-login">Login / E-mail</label>
+                <input type="text" id="op-login-login" required placeholder="usuario@email.com">
+              </div>
+              <div class="form-group">
+                <label for="op-login-password">Senha</label>
+                <input type="password" id="op-login-password" required placeholder="senha123">
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label for="op-login-token">Token (Opcional)</label>
+                <input type="password" id="op-login-token" placeholder="Token de acesso ou chave 2FA">
+              </div>
+            </div>
+            <div id="op-login-add-error" class="error-msg hidden" style="margin-top: 10px;"></div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Adicionar Conta</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Login do Operador (Admin Only) -->
+  <div id="edit-op-login-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>Editar Conta</h3>
+        <button class="btn-close" id="btn-close-edit-op-login"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-op-login-form" class="styled-form">
+          <input type="hidden" id="edit-op-login-id">
+          <div class="form-group">
+            <label for="edit-op-login-platform">Plataforma</label>
+            <select id="edit-op-login-platform" required>
+              <option value="steam">Steam</option>
+              <option value="xbox">Xbox</option>
+              <option value="other">Outra...</option>
+            </select>
+          </div>
+          <div class="form-group hidden" id="edit-op-login-custom-group">
+            <label for="edit-op-login-platform-custom">Nome da Plataforma</label>
+            <input type="text" id="edit-op-login-platform-custom" placeholder="Ex: Epic Games">
+          </div>
+          <div class="form-group">
+            <label for="edit-op-login-login">Login / E-mail</label>
+            <input type="text" id="edit-op-login-login" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-op-login-password">Senha</label>
+            <input type="password" id="edit-op-login-password" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-op-login-token">Token (Opcional)</label>
+            <input type="password" id="edit-op-login-token">
+          </div>
+          <div id="edit-op-login-error" class="error-msg hidden" style="margin-top: 10px;"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-edit-op-login">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Membro da Equipe (Admin Only) -->
+  <div id="user-edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Membro da Equipe</h3>
+        <button class="btn-close" id="btn-close-user-edit-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="user-edit-form" class="styled-form">
+          <input type="hidden" id="edit-user-id-field">
+          
+          <div class="form-group">
+            <label for="edit-user-username">Nome de Usuário</label>
+            <input type="text" id="edit-user-username" required>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-user-nickname">Apelido (Nome de preferência)</label>
+            <input type="text" id="edit-user-nickname" placeholder="Ex: João">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-user-password">Nova Senha (Deixe em branco para manter a atual)</label>
+            <input type="password" id="edit-user-password" placeholder="Nova senha...">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-user-role">Cargo</label>
+            <select id="edit-user-role" required>
+              <option value="operator">Operador (Duper)</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+
+          <!-- Campos extras apenas de operadores (Comissão/Meta) -->
+          <div id="edit-user-operator-fields">
+            <div class="form-group">
+              <label for="edit-user-payment">Comissão por Registro (R$)</label>
+              <input type="number" id="edit-user-payment" step="0.01" min="0" placeholder="Ex: 5.00">
+            </div>
+            <div class="form-group">
+              <label for="edit-user-goal">Meta Diária (Contas Cheias)</label>
+              <input type="number" id="edit-user-goal" min="1" placeholder="Ex: 1">
+            </div>
+          </div>
+
+          <div id="edit-user-error-msg" class="error-msg hidden"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-user-edit-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Ajustar Estoque Manualmente (Admin Only) -->
+  <div id="stock-adjust-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Ajustar Estoque Manual</h3>
+        <button class="btn-close" id="btn-close-stock-adjust-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="stock-adjust-form" class="styled-form">
+          <input type="hidden" id="adjust-account-id">
+          <input type="hidden" id="adjust-item-id">
+          
+          <div class="form-group">
+            <label>Item</label>
+            <input type="text" id="adjust-item-name" disabled style="background: rgba(255,255,255,0.03); color: var(--text-muted);">
+          </div>
+          
+          <div class="form-group">
+            <label>Conta</label>
+            <input type="text" id="adjust-account-name" disabled style="background: rgba(255,255,255,0.03); color: var(--text-muted);">
+          </div>
+
+          <div class="form-group">
+            <label for="adjust-new-qty">Nova Quantidade em Estoque</label>
+            <input type="number" id="adjust-new-qty" min="0" required placeholder="Ex: 150">
+          </div>
+          
+          <div id="adjust-stock-error" class="error-msg hidden"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-stock-adjust-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Estoque</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Transação (Admin Only) -->
+  <div id="edit-tx-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Transação</h3>
+        <button class="btn-close" id="btn-close-edit-tx-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-tx-form" class="styled-form">
+          <input type="hidden" id="edit-tx-id">
+          
+          <div class="form-group">
+            <label>Item / Quantidade / Operação</label>
+            <input type="text" id="edit-tx-summary" disabled style="background: rgba(255,255,255,0.03); color: var(--text-muted);">
+          </div>
+
+          <div class="form-group">
+            <label for="edit-tx-helper">Quem Ajudou?</label>
+            <select id="edit-tx-helper">
+              <option value="">Ninguém (Apenas eu)</option>
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+
+          <!-- Campos da Venda (Exibidos apenas se for tipo 'sale') -->
+          <div id="edit-tx-sale-fields" class="hidden" style="border: 1px dashed var(--secondary); padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.1); margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label for="edit-tx-client-id">Cliente</label>
+              <select id="edit-tx-client-id">
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-tx-sale-value">Valor do Pedido</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="number" id="edit-tx-sale-value" step="0.01" min="0" placeholder="Ex: 50.00" style="flex-grow: 1;">
+                <select id="edit-tx-sale-currency" style="width: 100px;">
+                  <option value="BRL">Reais (R$)</option>
+                  <option value="USD">Dólar ($)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-tx-notes">Notas / Observações</label>
+            <textarea id="edit-tx-notes" rows="3" placeholder="Observações da transação..."></textarea>
+          </div>
+          
+          <div id="edit-tx-error" class="error-msg hidden"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-edit-tx-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Cadastrar/Editar Licença -->
+  <div id="license-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 id="license-modal-title">Cadastrar Licença</h3>
+        <button class="btn-close" id="btn-close-license-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="license-form" class="styled-form">
+          <input type="hidden" id="license-id-field">
+          
+          <div class="form-group">
+            <label for="license-login">Login / E-mail</label>
+            <input type="text" id="license-login" required placeholder="Ex: conta@email.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="license-password">Senha</label>
+            <input type="password" id="license-password" required placeholder="Digite a senha...">
+          </div>
+
+          <div class="form-group">
+            <label for="license-type">Tipo de Conta</label>
+            <select id="license-type" required>
+              <option value="mother">Conta Mãe</option>
+              <option value="child">Conta Filha</option>
+            </select>
+          </div>
+
+          <div id="license-account-username-group" class="form-group hidden">
+            <label for="license-account-username">Usuário da Conta</label>
+            <input type="text" id="license-account-username" placeholder="Ex: PlayerIGN">
+          </div>
+
+          <div id="license-token-status-group" class="form-group hidden">
+            <label for="license-token-status">Status do Token (Capacidade)</label>
+            <select id="license-token-status">
+              <option value="empty" selected>Vazia</option>
+              <option value="filling">Enchendo</option>
+              <option value="full">FULL</option>
+            </select>
+          </div>
+
+          <div id="license-token-group" class="form-group">
+            <label for="license-token">Token</label>
+            <input type="password" id="license-token" placeholder="Token da conta (opcional)">
+          </div>
+
+          <!-- Seleção de Conta Mãe (Exibida apenas se for tipo 'child') -->
+          <div id="license-mother-select-group" class="form-group hidden">
+            <label for="license-mother-id">Conta Mãe Correspondente</label>
+            <select id="license-mother-id">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+
+          <!-- Campos exclusivos de Administrador (admin-only) -->
+          <div id="license-admin-fields" class="admin-only hidden" style="border: 1px dashed rgba(168, 85, 247, 0.3); padding: 12px; border-radius: 8px; background: rgba(168, 85, 247, 0.05); margin-bottom: 12px;">
+            <div class="form-group">
+              <label for="license-status">Status da Conta</label>
+              <select id="license-status">
+                <option value="active">Ativa</option>
+                <option value="refunded">Reembolsada</option>
+                <option value="banned">Banida</option>
+              </select>
+            </div>
+
+            <!-- Cartão Utilizado (Exibido apenas para mãe se admin) -->
+            <div id="license-card-group" class="form-group">
+              <label for="license-card-used">Cartão de Compra</label>
+              <input type="text" id="license-card-used" placeholder="Ex: Visa final 1234">
+            </div>
+
+            <!-- Reembolso status (Exibido apenas para mãe se admin) -->
+            <div id="license-refunded-group" class="form-group">
+              <label for="license-refunded">Reembolso?</label>
+              <select id="license-refunded">
+                <option value="no" selected>Não</option>
+                <option value="yes">Sim</option>
+                <option value="pending">Pendente</option>
+              </select>
+            </div>
+
+            <!-- Operador Vinculado (Exibido apenas para filha se admin) -->
+            <div id="license-operator-group" class="form-group hidden">
+              <label for="license-operator-id">Operador Vinculado</label>
+              <select id="license-operator-id">
+                <option value="">Nenhum (Sem operador)</option>
+                <!-- Preenchido via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div id="license-error-msg" class="error-msg hidden"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-license-modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-license">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

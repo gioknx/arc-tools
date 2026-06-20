@@ -1,7 +1,6 @@
-# Repo público: sobe SÓ os distribuíveis. Source e docs de negócio ficam locais.
-/*
-!.gitignore
-!README.md
-!arc_ledger.user.js
-!arc_cookie_switcher.user.js
-!arc_ledger_instalar.html
+node_modules/
+database.db
+database_backup_*.db
+.env
+.DS_Store
+*.log
