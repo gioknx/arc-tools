@@ -928,6 +928,8 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .account-card-header h3 {
@@ -945,6 +947,7 @@ select option {
   text-transform: uppercase;
   padding: 3px 8px;
   border-radius: 6px;
+  white-space: nowrap;
 }
 
 .status-active { background: rgba(16, 185, 129, 0.15); color: var(--status-active); }
