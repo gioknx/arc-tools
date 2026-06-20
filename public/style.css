@@ -159,7 +159,7 @@ body {
   align-items: center;
 }
 
-.input-wrapper i {
+.input-wrapper i, .input-wrapper svg {
   position: absolute;
   left: 14px;
   width: 18px;
@@ -192,7 +192,7 @@ body {
   box-shadow: 0 0 15px var(--primary-glow);
 }
 
-.input-wrapper input:focus + i {
+.input-wrapper input:focus + i, .input-wrapper input:focus + svg {
   color: var(--primary);
 }
 
@@ -354,7 +354,7 @@ body {
   transition: var(--transition-smooth);
 }
 
-.nav-item i {
+.nav-item i, .nav-item svg {
   width: 18px;
   height: 18px;
 }
@@ -528,7 +528,7 @@ body {
   justify-content: center;
 }
 
-.stat-icon i {
+.stat-icon i, .stat-icon svg {
   width: 18px;
   height: 18px;
 }
@@ -587,7 +587,7 @@ body {
   gap: 10px;
 }
 
-.panel-header h3 i {
+.panel-header h3 i, .panel-header h3 svg {
   color: var(--primary);
   width: 20px;
   height: 20px;
@@ -663,7 +663,7 @@ body {
   width: 100%;
 }
 
-.search-box i {
+.search-box i, .search-box svg {
   position: absolute;
   left: 14px;
   width: 16px;
@@ -804,7 +804,7 @@ select option {
   margin-top: 2px;
 }
 
-.activity-badge i {
+.activity-badge i, .activity-badge svg {
   width: 14px;
   height: 14px;
 }
